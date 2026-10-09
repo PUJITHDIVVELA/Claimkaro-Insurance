@@ -13,7 +13,7 @@ def generate_otp_code():
     return str(random.randint(100000, 999999))
 
 def send_email_smtp(recipient_email, subject, body_html):
-    """Sends HTML email using configured SMTP credentials."""
+    """Sends HTML email using configured SMTP credentials with fallback ports."""
     try:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
@@ -23,13 +23,25 @@ def send_email_smtp(recipient_email, subject, body_html):
         html_part = MIMEText(body_html, 'html')
         msg.attach(html_part)
 
-        server = smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT)
-        if Config.MAIL_USE_TLS:
-            server.starttls()
-        
-        server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
-        server.sendmail(Config.MAIL_USERNAME, recipient_email, msg.as_string())
-        server.quit()
+        # Try Primary SMTP configuration
+        try:
+            if Config.MAIL_PORT == 465:
+                server = smtplib.SMTP_SSL(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=10)
+            else:
+                server = smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=10)
+                if Config.MAIL_USE_TLS:
+                    server.starttls()
+            server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
+            server.sendmail(Config.MAIL_USERNAME, recipient_email, msg.as_string())
+            server.quit()
+        except Exception as e_primary:
+            logger.warning(f"Primary SMTP port failed: {e_primary}, trying fallback SSL port 465...")
+            # Fallback to SSL port 465
+            server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10)
+            server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
+            server.sendmail(Config.MAIL_USERNAME, recipient_email, msg.as_string())
+            server.quit()
+
         logger.info(f"Email sent successfully to {recipient_email}")
         return True, "Email sent successfully"
     except Exception as e:
@@ -44,7 +56,6 @@ def create_and_send_otp(email, purpose):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # Invalidate older unverified OTPs for this email & purpose
             cursor.execute("""
                 UPDATE email_otps SET is_verified = TRUE 
                 WHERE email = %s AND purpose = %s
