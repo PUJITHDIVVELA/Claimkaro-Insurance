@@ -3,6 +3,7 @@ from flask import Flask, render_template, session, redirect, url_for, request
 from flask_cors import CORS
 from config import Config
 from database.connection import init_db
+from database.seed import seed_database
 
 # Import Blueprints
 from routes.auth_routes import auth_bp
@@ -27,11 +28,12 @@ def create_app():
     # Ensure Uploads Directory Exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Initialize Database Schema
+    # Initialize Database Schema & Seed Data
     try:
         init_db()
+        seed_database()
     except Exception as e:
-        print(f"Warning: Database initialization error on startup: {e}")
+        print(f"Warning: Database initialization/seed on startup: {e}")
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
