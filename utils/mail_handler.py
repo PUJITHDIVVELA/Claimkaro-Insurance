@@ -13,40 +13,49 @@ def generate_otp_code():
     return str(random.randint(100000, 999999))
 
 def send_email_smtp(recipient_email, subject, body_html):
-    """Sends HTML email using configured SMTP credentials with fallback ports."""
+    """Sends HTML email using SMTP with automatic failover between ports 587 and 465."""
+    sender_email = Config.MAIL_USERNAME.strip() if Config.MAIL_USERNAME else ""
+    sender_password = Config.MAIL_PASSWORD.strip() if Config.MAIL_PASSWORD else ""
+
+    if not sender_email or not sender_password:
+        return False, "SMTP Mail credentials are not configured on the server."
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = f"ClaimKaro Insurance <{sender_email}>"
+    msg['To'] = recipient_email
+
+    html_part = MIMEText(body_html, 'html')
+    msg.attach(html_part)
+
+    errors = []
+
+    # Attempt 1: Port 587 with STARTTLS
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = f"ClaimKaro Insurance <{Config.MAIL_USERNAME}>"
-        msg['To'] = recipient_email
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=8)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.quit()
+        logger.info(f"Email sent successfully to {recipient_email} via Port 587 TLS")
+        return True, "OTP verification code sent to your email."
+    except Exception as e1:
+        errors.append(f"Port 587: {str(e1)}")
+        logger.warning(f"Port 587 TLS failed: {e1}, attempting Port 465 SSL...")
 
-        html_part = MIMEText(body_html, 'html')
-        msg.attach(html_part)
+    # Attempt 2: Port 465 with SSL
+    try:
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=8)
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.quit()
+        logger.info(f"Email sent successfully to {recipient_email} via Port 465 SSL")
+        return True, "OTP verification code sent to your email."
+    except Exception as e2:
+        errors.append(f"Port 465: {str(e2)}")
+        logger.error(f"Port 465 SSL failed: {e2}")
 
-        # Try Primary SMTP configuration
-        try:
-            if Config.MAIL_PORT == 465:
-                server = smtplib.SMTP_SSL(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=10)
-            else:
-                server = smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=10)
-                if Config.MAIL_USE_TLS:
-                    server.starttls()
-            server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
-            server.sendmail(Config.MAIL_USERNAME, recipient_email, msg.as_string())
-            server.quit()
-        except Exception as e_primary:
-            logger.warning(f"Primary SMTP port failed: {e_primary}, trying fallback SSL port 465...")
-            # Fallback to SSL port 465
-            server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10)
-            server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
-            server.sendmail(Config.MAIL_USERNAME, recipient_email, msg.as_string())
-            server.quit()
-
-        logger.info(f"Email sent successfully to {recipient_email}")
-        return True, "Email sent successfully"
-    except Exception as e:
-        logger.error(f"Failed to send email to {recipient_email}: {e}")
-        return False, str(e)
+    return False, "Failed to send OTP email due to server network policy on free tier. Please contact admin or check server SMTP settings."
 
 def create_and_send_otp(email, purpose):
     otp_code = generate_otp_code()
