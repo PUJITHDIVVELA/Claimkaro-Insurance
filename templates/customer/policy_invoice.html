@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Invoice - {{ policy.policy_number }} - ClaimKaro Insurance</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+        }
+        .invoice-card {
+            max-width: 850px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 40px;
+            border: 1px solid #e2e8f0;
+        }
+        .invoice-header {
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: #2563eb;
+            letter-spacing: -0.5px;
+        }
+        .invoice-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-box {
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+        }
+        .table-invoice {
+            border: 1px solid #e2e8f0;
+        }
+        .table-invoice th {
+            background-color: #0f172a;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 12px;
+        }
+        .table-invoice td {
+            padding: 14px 12px;
+            vertical-align: middle;
+        }
+        .badge-verified {
+            background-color: #dcfce7;
+            color: #166534;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .invoice-card {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Print / Action Controls Header -->
+    <div class="container text-end mt-4 max-w-850 no-print" style="max-width: 850px;">
+        <button onclick="window.print()" class="btn btn-primary fw-bold shadow-sm me-2">
+            <i class="fas fa-print me-2"></i>Print Tax Invoice / Download PDF
+        </button>
+        <button onclick="window.close()" class="btn btn-outline-secondary fw-bold shadow-sm">
+            <i class="fas fa-times me-1"></i>Close Window
+        </button>
+    </div>
+
+    <!-- Main Invoice Card -->
+    <div class="invoice-card">
+        <!-- Header -->
+        <div class="invoice-header d-flex justify-content-between align-items-center">
+            <div>
+                <div class="company-logo mb-1">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>ClaimKaro Insurance
+                </div>
+                <div class="text-muted small">Official Policy Payment Receipt & Tax Invoice</div>
+                <div class="text-muted small">IRDAI Reg. No: 10829471 • GSTIN: 07AAAAC1234F1Z5</div>
+            </div>
+            <div>
+                <div class="invoice-title text-primary">TAX INVOICE</div>
+                <div class="text-end font-weight-bold text-dark mt-1">Invoice #: INV-{{ policy.id }}-2026</div>
+                <div class="text-end text-muted small">Date: {{ policy.start_date }}</div>
+            </div>
+        </div>
+
+        <!-- Addresses Section -->
+        <div class="row g-4 mb-4">
+            <div class="col-6">
+                <div class="info-box h-100">
+                    <h6 class="text-uppercase text-muted font-weight-bold fs-7 mb-2"><i class="fas fa-building me-1"></i> Issued By:</h6>
+                    <div class="fw-bold text-dark fs-6">ClaimKaro Enterprise Insurance Ltd.</div>
+                    <div class="text-secondary small mt-1">
+                        ClaimKaro Tower, Plot No. 42, Financial District<br>
+                        Gachibowli, Hyderabad, Telangana - 500032<br>
+                        Support: support@claimkaro.com | +91 1800-425-9999
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="info-box h-100">
+                    <h6 class="text-uppercase text-muted font-weight-bold fs-7 mb-2"><i class="fas fa-user me-1"></i> Billed To (Policyholder):</h6>
+                    <div class="fw-bold text-dark fs-6">{{ policy.customer_name }}</div>
+                    <div class="text-secondary small mt-1">
+                        {% if policy.customer_address %}
+                            {{ policy.customer_address }}<br>
+                            {{ policy.customer_city or '' }}, {{ policy.customer_state or '' }} - {{ policy.customer_pincode or '' }}<br>
+                        {% else %}
+                            Address: Registered Customer Address<br>
+                        {% endif %}
+                        Email: {{ policy.customer_email }}<br>
+                        Phone: {{ policy.customer_phone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Policy Summary Banner -->
+        <div class="bg-light p-3 rounded-3 mb-4 border d-flex justify-content-between align-items-center">
+            <div>
+                <span class="text-muted small d-block">Policy Number:</span>
+                <strong class="fs-5 text-primary">{{ policy.policy_number }}</strong>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Coverage Period:</span>
+                <strong class="text-dark">{{ policy.start_date }} to {{ policy.end_date }} ({{ policy.duration_months }} Months)</strong>
+            </div>
+            <div>
+                <span class="text-muted small d-block">Payment Status:</span>
+                <span class="badge-verified"><i class="fas fa-check-circle me-1"></i>PAID & VERIFIED</span>
+            </div>
+        </div>
+
+        <!-- Invoice Details Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-invoice mb-0">
+                <thead>
+                    <tr>
+                        <th>Item Description</th>
+                        <th class="text-center">Policy Tenure</th>
+                        <th class="text-end">Sum Assured</th>
+                        <th class="text-end">Premium Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ policy.policy_type_name }}</div>
+                            <div class="text-muted small">{{ policy.policy_description }}</div>
+                        </td>
+                        <td class="text-center font-weight-bold">{{ policy.duration_months }} Months</td>
+                        <td class="text-end fw-bold">₹{{ "{:,.2f}".format(policy.coverage_amount|float) }}</td>
+                        <td class="text-end fw-bold text-dark">₹{{ "{:,.2f}".format(policy.premium|float) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Financial Breakdown -->
+        <div class="row mb-4">
+            <div class="col-7">
+                <div class="p-3 rounded border bg-light">
+                    <h6 class="fw-bold text-dark mb-2"><i class="fas fa-credit-card me-1 text-success"></i> Payment Audit Info</h6>
+                    <div class="small text-muted mb-1">Razorpay Payment ID: <strong>{{ policy.razorpay_payment_id or 'PAY_RZP_CONFIRMED' }}</strong></div>
+                    <div class="small text-muted mb-1">Razorpay Order ID: <strong>{{ policy.razorpay_order_id or 'ORD_RZP_SUCCESS' }}</strong></div>
+                    <div class="small text-muted">Transaction Date: <strong>{{ policy.payment_date or policy.start_date }}</strong></div>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="border rounded p-3 bg-white">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Net Base Premium:</span>
+                        <span>₹{{ "{:,.2f}".format((policy.premium|float) / 1.18) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">CGST (9%):</span>
+                        <span>₹{{ "{:,.2f}".format(((policy.premium|float) / 1.18) * 0.09) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                        <span class="text-muted">SGST (9%):</span>
+                        <span>₹{{ "{:,.2f}".format(((policy.premium|float) / 1.18) * 0.09) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-1">
+                        <strong class="fs-6 text-dark">Total Amount Paid:</strong>
+                        <strong class="fs-5 text-success">₹{{ "{:,.2f}".format(policy.premium|float) }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms & Signature -->
+        <div class="row pt-4 border-top">
+            <div class="col-8">
+                <h6 class="fw-bold text-dark small mb-1">Terms & Conditions:</h6>
+                <p class="text-muted" style="font-size: 11px;">
+                    1. This is a computer-generated tax invoice and does not require a physical signature.<br>
+                    2. Premium payments are inclusive of all applicable central & state Goods & Services Tax (GST).<br>
+                    3. For claims submission or inquiries, visit customer portal at claimkaro.com or call our toll-free number.
+                </p>
+            </div>
+            <div class="col-4 text-end">
+                <div class="fw-bold text-dark mb-4">For ClaimKaro Insurance Ltd.</div>
+                <div class="text-primary font-weight-bold" style="font-family: 'Brush Script MT', cursive; font-size: 22px;">Authorized Signatory</div>
+                <div class="border-top pt-1 text-muted small">Authorized Insurance Registrar</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

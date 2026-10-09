@@ -160,11 +160,15 @@ class PolicyService:
                 query = """
                     SELECT p.*, pt.name as policy_type_name, pt.description as policy_description, pt.duration_months,
                            c.name as customer_name, c.email as customer_email, c.phone as customer_phone,
-                           ag.name as agent_name, ag.email as agent_email
+                           cp.address as customer_address, cp.city as customer_city, cp.state as customer_state, cp.pincode as customer_pincode,
+                           ag.name as agent_name, ag.email as agent_email,
+                           pay.razorpay_payment_id, pay.razorpay_order_id, pay.created_at as payment_date, pay.amount as payment_amount
                     FROM policies p
                     JOIN policy_types pt ON p.policy_type_id = pt.id
                     JOIN users c ON p.customer_id = c.id
+                    LEFT JOIN customer_profiles cp ON c.id = cp.user_id
                     LEFT JOIN users ag ON p.agent_id = ag.id
+                    LEFT JOIN policy_payments pay ON p.id = pay.policy_id AND pay.status = 'SUCCESS'
                     WHERE p.id = %s
                 """
                 cursor.execute(query, (policy_id,))

@@ -27,6 +27,14 @@ def policy_detail_view(policy_id):
     pol = PolicyService.get_policy_by_id(policy_id, user_id=session['user_id'], role='CUSTOMER')
     return render_template('customer/policy_detail.html', policy=pol)
 
+@customer_bp.route('/policies/<int:policy_id>/invoice')
+@role_required('CUSTOMER')
+def policy_invoice_view(policy_id):
+    pol = PolicyService.get_policy_by_id(policy_id, user_id=session['user_id'], role='CUSTOMER')
+    if not pol:
+        return "Policy not found or access unauthorized", 444
+    return render_template('customer/policy_invoice.html', policy=pol)
+
 @customer_bp.route('/claims/submit')
 @role_required('CUSTOMER')
 def submit_claim_view():
