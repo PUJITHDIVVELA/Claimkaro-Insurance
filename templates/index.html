@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}ClaimKaro - NextGen Enterprise Insurance & Claims Management Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <div class="bg-dark text-white py-5 px-4 rounded-4 mb-5 shadow-lg position-relative overflow-hidden" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+        <div class="row align-items-center py-4">
+            <div class="col-lg-7 px-lg-5">
+                <span class="badge bg-info text-dark mb-3 px-3 py-2 fw-semibold"><i class="fas fa-shield-alt me-1"></i> Enterprise Insurance SaaS</span>
+                <h1 class="display-4 fw-bold mb-3">Protect What Matters Most With Confidence</h1>
+                <p class="lead text-light opacity-75 mb-4">
+                    Streamline policy issuance, instant claim submissions, document verification, and AI-driven support in one unified platform.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register_view') }}" class="btn btn-primary btn-lg px-4 shadow">Get Started Now</a>
+                    <a href="{{ url_for('auth.login_view') }}" class="btn btn-outline-light btn-lg px-4">Sign In</a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block text-center">
+                <i class="fas fa-file-signature text-info" style="font-size: 10rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Offerings -->
+    <div class="container mb-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Comprehensive Protection Plans</h2>
+            <p class="text-muted">Designed for individuals, families, and businesses with transparent coverage.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card h-100">
+                    <div class="stat-icon bg-primary text-white mb-3"><i class="fas fa-heartbeat"></i></div>
+                    <h5 class="fw-bold">Health Guard Comprehensive</h5>
+                    <p class="text-muted small">Family health cover up to ₹5,00,000 with cashless hospitalization and ambulance allowance.</p>
+                    <div class="fw-bold text-primary mt-3">Starting at ₹12,500 / year</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card h-100">
+                    <div class="stat-icon bg-info text-white mb-3"><i class="fas fa-car"></i></div>
+                    <h5 class="fw-bold">Super Auto Secure</h5>
+                    <p class="text-muted small">Zero-depreciation motor insurance protecting your car against accidents, fire, and third-party liabilities.</p>
+                    <div class="fw-bold text-primary mt-3">Starting at ₹8,500 / year</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card h-100">
+                    <div class="stat-icon bg-success text-white mb-3"><i class="fas fa-user-shield"></i></div>
+                    <h5 class="fw-bold">Life Protect Term Plan</h5>
+                    <p class="text-muted small">High sum assured life cover up to ₹50,00,000 providing total financial independence for your loved ones.</p>
+                    <div class="fw-bold text-primary mt-3">Starting at ₹24,000 / year</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How Claims Work -->
+    <div class="bg-light py-5 px-4 rounded-4 mb-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Effortless 4-Step Claim Settlement</h2>
+                <p class="text-muted">Transparent processing with real-time status tracking</p>
+            </div>
+            <div class="row text-center g-4">
+                <div class="col-md-3">
+                    <div class="p-3">
+                        <div class="stat-icon mx-auto bg-primary text-white mb-3"><i class="fas fa-upload"></i></div>
+                        <h6>1. Submit & Upload</h6>
+                        <small class="text-muted">File claim details and upload medical/damage documents directly online.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3">
+                        <div class="stat-icon mx-auto bg-warning text-white mb-3"><i class="fas fa-tasks"></i></div>
+                        <h6>2. Officer Review</h6>
+                        <small class="text-muted">Assigned Claims Officers review bill proofs and policy terms immediately.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3">
+                        <div class="stat-icon mx-auto bg-info text-white mb-3"><i class="fas fa-check-double"></i></div>
+                        <h6>3. Verification</h6>
+                        <small class="text-muted">Document verification completed with transparent audit trails.</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3">
+                        <div class="stat-icon mx-auto bg-success text-white mb-3"><i class="fas fa-hand-holding-usd"></i></div>
+                        <h6>4. Fast Settlement</h6>
+                        <small class="text-muted">Direct payout into your registered account upon approval.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credentials Quick Demo Panel -->
+    <div class="container mb-5">
+        <div class="card card-table p-4">
+            <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-key me-2"></i> Demo Login Credentials</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="p-3 border rounded bg-light">
+                        <span class="badge bg-danger mb-2">ADMIN</span>
+                        <div><strong>Email:</strong> admin@insurance.com</div>
+                        <div><strong>Pass:</strong> Admin@123</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 border rounded bg-light">
+                        <span class="badge bg-primary mb-2">CUSTOMER</span>
+                        <div><strong>Email:</strong> ravi@example.com</div>
+                        <div><strong>Pass:</strong> Customer@123</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 border rounded bg-light">
+                        <span class="badge bg-info mb-2">CLAIMS OFFICER</span>
+                        <div><strong>Email:</strong> officer.rajesh@insurance.com</div>
+                        <div><strong>Pass:</strong> Officer@123</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 border rounded bg-light">
+                        <span class="badge bg-secondary mb-2">AGENT</span>
+                        <div><strong>Email:</strong> agent.sunil@insurance.com</div>
+                        <div><strong>Pass:</strong> Agent@123</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

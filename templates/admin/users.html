@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - Admin ClaimKaro{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">User & Role Management</h2>
+            <p class="text-muted mb-0">Manage system users, onboard staff (Admins / Agents / Claims Officers), and status controls</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createStaffModal">
+            <i class="fas fa-user-plus me-2"></i>Onboard Staff Member
+        </button>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6 class="mb-0 fw-bold">System Users List</h6>
+            <div class="d-flex gap-2">
+                <input type="text" id="adminUserSearch" class="form-control form-control-sm" placeholder="Search name or email..." style="width: 220px;">
+                <select id="adminUserRole" class="form-select form-select-sm" style="width: 160px;">
+                    <option value="">All Roles</option>
+                    <option value="CUSTOMER">CUSTOMER</option>
+                    <option value="AGENT">AGENT</option>
+                    <option value="CLAIMS_OFFICER">CLAIMS OFFICER</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="adminUsersTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading users...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Onboard Staff Account (Admin / Agent / Claims Officer) -->
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white mb-0"><i class="fas fa-user-shield me-2"></i>Onboard Staff / Admin Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createStaffForm">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Staff Role *</label>
+                        <select id="staffRole" class="form-select" required>
+                            <option value="AGENT">Insurance Agent (AGT)</option>
+                            <option value="CLAIMS_OFFICER">Claims Assessment Officer (CO)</option>
+                            <option value="ADMIN">System Administrator (ADMIN)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Full Name *</label>
+                        <input type="text" id="staffName" class="form-control" placeholder="e.g. Vikram Seth" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Work Email Address *</label>
+                        <input type="email" id="staffEmail" class="form-control" placeholder="vikram@insurance.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Phone Number *</label>
+                        <input type="tel" id="staffPhone" class="form-control" placeholder="+91 9811223344" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Assign Password *</label>
+                        <input type="password" id="staffPassword" class="form-control" placeholder="Minimum 6 characters" minlength="6" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

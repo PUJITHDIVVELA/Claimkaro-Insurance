@@ -1,0 +1,109 @@
+{
+	"info": {
+		"_postman_id": "insurance-system-collection-2026",
+		"name": "Insurance Policy & Claims Management System API",
+		"description": "Production-level REST API Collection for AegisCare Enterprise Insurance System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Amit Verma\",\n  \"email\": \"amit@example.com\",\n  \"phone\": \"+919876501234\",\n  \"password\": \"Customer@123\",\n  \"role\": \"CUSTOMER\",\n  \"city\": \"Delhi\"\n}"
+						},
+						"url": {"raw": "http://localhost:5000/register", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["register"]}
+					}
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ravi@example.com\",\n  \"password\": \"Customer@123\"\n}"
+						},
+						"url": {"raw": "http://localhost:5000/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["login"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Policies",
+			"item": [
+				{
+					"name": "Get Policy Types",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:5000/api/policies/types", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "policies", "types"]}
+					}
+				},
+				{
+					"name": "Purchase Policy",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"policy_type_id\": 1\n}"
+						},
+						"url": {"raw": "http://localhost:5000/api/policies/purchase", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "policies", "purchase"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Claims",
+			"item": [
+				{
+					"name": "Submit Claim",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"policy_id\": 1,\n  \"reason\": \"Medical Treatment\",\n  \"description\": \"Treatment for viral infection\",\n  \"claim_amount\": 15000,\n  \"claim_date\": \"2026-09-28\"\n}"
+						},
+						"url": {"raw": "http://localhost:5000/api/claims/submit", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "claims", "submit"]}
+					}
+				},
+				{
+					"name": "Review Claim (Officer)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"decision\": \"APPROVED\",\n  \"remarks\": \"Verified medical records\"\n}"
+						},
+						"url": {"raw": "http://localhost:5000/api/claims/1/review", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "claims", "1", "review"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Chatbot & Support",
+			"item": [
+				{
+					"name": "Chatbot Message",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"What is my claim status?\"\n}"
+						},
+						"url": {"raw": "http://localhost:5000/api/chatbot/message", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "chatbot", "message"]}
+					}
+				}
+			]
+		}
+	]
+}

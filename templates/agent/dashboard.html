@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Agent Dashboard - AegisCare Insurance{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="agentDashboardStats">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Insurance Agent Workstation</h2>
+        <p class="text-muted">Manage assigned customers, active policy coverage, and customer claim status</p>
+    </div>
+
+    <!-- Agent Quick Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Assigned Policies</span>
+                    <div class="stat-icon bg-primary text-white"><i class="fas fa-file-contract"></i></div>
+                </div>
+                <div class="stat-value" id="statAgentPolicies">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Active Policies</span>
+                    <div class="stat-icon bg-success text-white"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-value text-success" id="statAgentActive">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Expiring Policies</span>
+                    <div class="stat-icon bg-warning text-white"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+                <div class="stat-value text-warning" id="statAgentExpiring">0</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Total Customers</span>
+                    <div class="stat-icon bg-info text-white"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-value" id="statAgentCustomers">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i> Portfolio Policies Overview</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Policy Number</th>
+                        <th>Customer</th>
+                        <th>Plan Type</th>
+                        <th>Coverage Amount</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="agentPoliciesTableBody">
+                    <tr><td colspan="6" class="text-center py-4 text-muted">Loading assigned policies...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadAgentDashboard();
+});
+
+async function loadAgentDashboard() {
+    const res = await fetchAPI('/agent/api/dashboard-summary');
+    if (res.success && res.data) {
+        const d = res.data;
+        document.getElementById('statAgentPolicies').textContent = d.assigned_policies_count;
+        document.getElementById('statAgentActive').textContent = d.active_policies_count;
+        document.getElementById('statAgentExpiring').textContent = d.expired_policies_count;
+        document.getElementById('statAgentCustomers').textContent = d.total_customers_count;
+
+        const tbody = document.getElementById('agentPoliciesTableBody');
+        if (tbody) {
+            if (d.policies.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No policies assigned.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = d.policies.map(p => `
+                <tr>
+                    <td class="font-weight-bold">${p.policy_number}</td>
+                    <td>${p.customer_name} (${p.customer_email})</td>
+                    <td>${p.policy_type_name}</td>
+                    <td class="font-weight-bold">₹${parseFloat(p.coverage_amount).toLocaleString('en-IN')}</td>
+                    <td>${p.end_date}</td>
+                    <td><span class="badge-status badge-${p.status.toLowerCase()}">${p.status}</span></td>
+                </tr>
+            `).join('');
+        }
+    }
+}
+</script>
+{% endblock %}

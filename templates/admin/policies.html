@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}All Enrolled Policies - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Master Policies Registry</h2>
+        <p class="text-muted">Overview of all customer enrolled policies across all agents</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Policies Directory</h6>
+            <input type="text" id="adminPolSearch" class="form-control form-control-sm w-25" placeholder="Search policy # or customer...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Policy Number</th>
+                        <th>Customer</th>
+                        <th>Plan Name</th>
+                        <th>Coverage Amount</th>
+                        <th>Premium</th>
+                        <th>Assigned Agent</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="adminPolTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading policies...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadPolicies();
+});
+
+async function loadPolicies() {
+    const tbody = document.getElementById('adminPolTableBody');
+    const res = await fetchAPI('/api/policies');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(p => `
+            <tr>
+                <td class="font-weight-bold">${p.policy_number}</td>
+                <td>${p.customer_name}</td>
+                <td>${p.policy_type_name}</td>
+                <td class="font-weight-bold">₹${parseFloat(p.coverage_amount).toLocaleString('en-IN')}</td>
+                <td>₹${parseFloat(p.premium).toLocaleString('en-IN')}</td>
+                <td>${p.agent_name ? p.agent_name : 'Direct Online'}</td>
+                <td><span class="badge-status badge-${p.status.toLowerCase()}">${p.status}</span></td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

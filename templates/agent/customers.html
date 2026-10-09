@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}My Customers - Agent Workstation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Customer Directory</h2>
+        <p class="text-muted">Registered customers and profile contacts</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Customer Directory List</h6>
+            <input type="text" id="agentCustomerSearch" class="form-control form-control-sm w-25" placeholder="Search customer name or phone...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>City / State</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="agentCustomerTableBody">
+                    <tr><td colspan="6" class="text-center py-4 text-muted">Loading customers...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadAgentCustomers();
+});
+
+async function loadAgentCustomers() {
+    const tbody = document.getElementById('agentCustomerTableBody');
+    const res = await fetchAPI('/admin/api/users?role=CUSTOMER');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(u => `
+            <tr>
+                <td>#${u.id}</td>
+                <td class="font-weight-bold">${u.name}</td>
+                <td>${u.email}</td>
+                <td>${u.phone}</td>
+                <td>${u.city ? u.city + ', ' + u.state : 'N/A'}</td>
+                <td><span class="badge bg-success">${u.status}</span></td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

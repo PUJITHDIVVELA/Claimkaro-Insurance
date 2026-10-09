@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Insurance Policies - AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Insurance Policy Management</h2>
+        <p class="text-muted">Browse available coverage plans or manage your currently active policies</p>
+    </div>
+
+    <!-- Nav Tabs -->
+    <ul class="nav nav-tabs mb-4" id="policyTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active font-weight-bold" id="available-tab" data-bs-toggle="tab" data-bs-target="#availablePlans">
+                <i class="fas fa-store me-2"></i>Available Insurance Plans
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link font-weight-bold" id="my-policies-tab" data-bs-toggle="tab" data-bs-target="#myPolicies">
+                <i class="fas fa-file-contract me-2"></i>My Enrolled Policies
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="policyTabContent">
+        <!-- Available Plans Tab -->
+        <div class="tab-pane fade show active" id="availablePlans">
+            <div class="row g-4" id="availablePolicyGrid">
+                <!-- Dynamically populated or rendered -->
+            </div>
+        </div>
+
+        <!-- My Policies Tab -->
+        <div class="tab-pane fade" id="myPolicies">
+            <div class="card card-table">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">My Policy Subscriptions</h6>
+                    <input type="text" id="myPolicySearch" class="form-control form-control-sm w-25" placeholder="Search policy number...">
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Policy Number</th>
+                                <th>Insurance Plan</th>
+                                <th>Coverage Amount</th>
+                                <th>Annual Premium</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myPoliciesTableBody">
+                            <tr><td colspan="7" class="text-center py-4 text-muted">Loading your policies...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Policy Purchase Confirmation Modal -->
+<div class="modal fade" id="purchasePolicyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-header-title text-white mb-0"><i class="fas fa-shield-alt me-2"></i>Confirm Policy Enrollment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="modalPolicyTypeId">
+                <h5 class="fw-bold text-primary mb-3" id="modalPolicyName">Plan Name</h5>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Total Sum Assured:</span>
+                    <strong id="modalPolicyCoverage">₹0</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Annual Premium:</span>
+                    <strong class="text-success" id="modalPolicyPremium">₹0</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 mb-3">
+                    <span class="text-muted">Policy Period:</span>
+                    <strong>12 Months (1 Year)</strong>
+                </div>
+                <p class="small text-muted mb-0">By clicking confirm, your policy will be issued immediately with active status.</p>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary fw-bold" id="confirmPurchaseBtn">Confirm & Issue Policy</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadPolicyTypes();
+    loadMyPolicies();
+});
+
+async function loadPolicyTypes() {
+    const grid = document.getElementById('availablePolicyGrid');
+    if (!grid) return;
+    const res = await fetchAPI('/api/policies/types');
+    if (res.success && res.data) {
+        grid.innerHTML = res.data.map(pt => `
+            <div class="col-md-4">
+                <div class="stat-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold mb-0 text-primary">${pt.name}</h5>
+                            <span class="badge bg-success">${pt.duration_months} Months</span>
+                        </div>
+                        <p class="text-muted small mb-3">${pt.description}</p>
+                        <div class="p-3 bg-light rounded mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small text-muted">Coverage:</span>
+                                <strong class="small">₹${parseFloat(pt.coverage).toLocaleString('en-IN')}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="small text-muted">Annual Premium:</span>
+                                <strong class="text-success small">₹${parseFloat(pt.premium).toLocaleString('en-IN')}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="purchasePolicyModal(${pt.id}, '${pt.name}', ${pt.premium}, ${pt.coverage})" class="btn btn-primary w-100 fw-bold">
+                        <i class="fas fa-shopping-cart me-2"></i>Enroll Now
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+async function loadMyPolicies() {
+    const tbody = document.getElementById('myPoliciesTableBody');
+    if (!tbody) return;
+    const res = await fetchAPI('/api/policies');
+    if (res.success && res.data) {
+        if (res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">You have no active or enrolled policies yet.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = res.data.map(p => `
+            <tr>
+                <td class="font-weight-bold"><a href="/customer/policies/${p.id}">${p.policy_number}</a></td>
+                <td>${p.policy_type_name}</td>
+                <td class="font-weight-bold">₹${parseFloat(p.coverage_amount).toLocaleString('en-IN')}</td>
+                <td>₹${parseFloat(p.premium).toLocaleString('en-IN')}</td>
+                <td>${p.end_date}</td>
+                <td><span class="badge-status badge-${p.status.toLowerCase()}">${p.status}</span></td>
+                <td>
+                    <a href="/customer/claims/submit?policy_id=${p.id}" class="btn btn-sm btn-outline-primary">File Claim</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

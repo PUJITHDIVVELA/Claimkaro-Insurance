@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Policy Types - Admin AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Insurance Policy Types</h2>
+            <p class="text-muted mb-0">Configure available insurance products, premiums, and sum assured coverage</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createPolicyTypeModal">
+            <i class="fas fa-plus me-2"></i>Add Policy Type
+        </button>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom">
+            <h6 class="mb-0 fw-bold">Active Policy Plans</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Plan Name</th>
+                        <th>Coverage Amount</th>
+                        <th>Annual Premium</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="policyTypesTableBody">
+                    <tr><td colspan="6" class="text-center py-4 text-muted">Loading policy types...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadPolicyTypesTable();
+});
+
+async function loadPolicyTypesTable() {
+    const tbody = document.getElementById('policyTypesTableBody');
+    const res = await fetchAPI('/api/policies/types');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(pt => `
+            <tr>
+                <td>#${pt.id}</td>
+                <td class="font-weight-bold text-primary">${pt.name}</td>
+                <td class="font-weight-bold">₹${parseFloat(pt.coverage).toLocaleString('en-IN')}</td>
+                <td class="text-success fw-bold">₹${parseFloat(pt.premium).toLocaleString('en-IN')}</td>
+                <td>${pt.duration_months} Months</td>
+                <td><span class="badge bg-success">${pt.status}</span></td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

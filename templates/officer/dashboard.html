@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Claims Officer Dashboard - AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="officerDashboardStats">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Claims Officer Control Center</h2>
+        <p class="text-muted">Review submitted claim applications, assess attached documents, and record approval/rejection decisions</p>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Total Claims</span>
+                    <div class="stat-icon bg-primary text-white"><i class="fas fa-folder-open"></i></div>
+                </div>
+                <div class="stat-value" id="statTotalClaims">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Pending Review</span>
+                    <div class="stat-icon bg-warning text-white"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="stat-value text-warning" id="statPendingReview">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Under Assessment</span>
+                    <div class="stat-icon bg-info text-white"><i class="fas fa-search-dollar"></i></div>
+                </div>
+                <div class="stat-value text-info" id="statUnderReview">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Doc Required</span>
+                    <div class="stat-icon bg-secondary text-white"><i class="fas fa-file-exclamation"></i></div>
+                </div>
+                <div class="stat-value" id="statDocRequired">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Approved Claims</span>
+                    <div class="stat-icon bg-success text-white"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-value text-success" id="statApproved">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Claims Pending Assessment Table -->
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-exclamation-circle text-warning me-2"></i> Claims Requiring Officer Review</h6>
+            <a href="{{ url_for('officer.pending_claims_view') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All Pending</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Customer Name</th>
+                        <th>Policy</th>
+                        <th>Claim Amount</th>
+                        <th>Claim Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="officerPendingTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading pending claims...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

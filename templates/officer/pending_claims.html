@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Claims Review - AegisCare Officers{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Pending Claims Queue</h2>
+        <p class="text-muted">Assessment queue for newly submitted and under-review claims</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Queue Listing</h6>
+            <input type="text" id="pendingSearch" class="form-control form-control-sm w-25" placeholder="Search customer or claim #...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Customer</th>
+                        <th>Policy</th>
+                        <th>Claim Amount</th>
+                        <th>Claim Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingQueueTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading pending claims...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadPendingQueue();
+});
+
+async function loadPendingQueue() {
+    const tbody = document.getElementById('pendingQueueTableBody');
+    const res = await fetchAPI('/api/claims');
+    if (res.success && res.data) {
+        const pending = res.data.filter(c => ['SUBMITTED', 'UNDER_REVIEW', 'DOCUMENT_REQUIRED'].includes(c.status));
+        if (pending.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No pending claims in queue.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = pending.map(c => `
+            <tr>
+                <td class="font-weight-bold"><a href="/officer/claims/${c.id}/review">${c.claim_number}</a></td>
+                <td>${c.customer_name}</td>
+                <td>${c.policy_number} (${c.policy_type_name})</td>
+                <td class="font-weight-bold">₹${parseFloat(c.claim_amount).toLocaleString('en-IN')}</td>
+                <td>${c.claim_date}</td>
+                <td><span class="badge-status badge-${c.status.toLowerCase()}">${c.status.replace('_', ' ')}</span></td>
+                <td>
+                    <a href="/officer/claims/${c.id}/review" class="btn btn-sm btn-primary">
+                        <i class="fas fa-gavel me-1"></i> Review & Decision
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

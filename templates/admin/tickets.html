@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Support Tickets - Admin AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">System Support Tickets</h2>
+        <p class="text-muted">Monitor and resolve customer support inquiries across all categories</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Support Requests</h6>
+            <input type="text" id="adminTicketSearch" class="form-control form-control-sm w-25" placeholder="Search ticket # or customer...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>Customer</th>
+                        <th>Category</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTicketsTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading support tickets...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadTickets();
+});
+
+async function loadTickets() {
+    const tbody = document.getElementById('adminTicketsTableBody');
+    const res = await fetchAPI('/api/tickets');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(t => `
+            <tr>
+                <td class="font-weight-bold">${t.ticket_number}</td>
+                <td>${t.customer_name}</td>
+                <td><span class="badge bg-light text-dark border">${t.category}</span></td>
+                <td>${t.subject}</td>
+                <td><span class="badge ${t.priority === 'HIGH' || t.priority === 'URGENT' ? 'bg-danger' : 'bg-info'}">${t.priority}</span></td>
+                <td><span class="badge-status badge-${t.status.toLowerCase()}">${t.status.replace('_', ' ')}</span></td>
+                <td>${t.created_at}</td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Claim Assessment {{ claim.claim_number if claim else '' }} - Claims Officer{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if not claim %}
+        <div class="alert alert-danger text-center py-4">
+            <h5>Claim Not Found</h5>
+            <a href="{{ url_for('officer.pending_claims_view') }}" class="btn btn-outline-danger">Back to Queue</a>
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="{{ url_for('officer.pending_claims_view') }}" class="text-decoration-none text-muted small"><i class="fas fa-arrow-left me-1"></i> Back to Queue</a>
+                <h2 class="fw-bold mb-0">Claim Assessment: {{ claim.claim_number }}</h2>
+            </div>
+            <span class="badge-status badge-{{ claim.status.lower() }} fs-6 px-3 py-2">{{ claim.status.replace('_', ' ') }}</span>
+        </div>
+
+        <div class="row g-4">
+            <!-- Details Column -->
+            <div class="col-lg-7">
+                <!-- Customer & Policy Card -->
+                <div class="card card-table p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-user-shield me-2"></i> Applicant & Policy Information</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Customer Name:</span>
+                            <strong class="fs-6">{{ claim.customer_name }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Email / Phone:</span>
+                            <strong>{{ claim.customer_email }} / {{ claim.customer_phone }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Policy Number:</span>
+                            <strong>{{ claim.policy_number }} ({{ claim.policy_type_name }})</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Max Policy Sum Assured:</span>
+                            <strong class="text-primary">₹{{ "{:,.2f}".format(claim.coverage_amount) }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Claim Details -->
+                <div class="card card-table p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-file-medical me-2"></i> Claim Statement</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Claim Amount Requested:</span>
+                            <strong class="fs-4 text-danger">₹{{ "{:,.2f}".format(claim.claim_amount) }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Incident / Hospitalization Date:</span>
+                            <strong>{{ claim.claim_date }}</strong>
+                        </div>
+                        <div class="col-md-12">
+                            <span class="text-muted small d-block">Claim Reason:</span>
+                            <strong class="text-dark">{{ claim.reason }}</strong>
+                        </div>
+                        <div class="col-md-12">
+                            <span class="text-muted small d-block">Full Description:</span>
+                            <p class="p-3 bg-light rounded text-dark mb-0">{{ claim.description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attached Proof Documents -->
+                <div class="card card-table p-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-paperclip me-2"></i> Uploaded Document Verification</h5>
+                    {% if not claim.documents %}
+                        <div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle me-2"></i> No proof documents uploaded by applicant yet.</div>
+                    {% else %}
+                        <div class="list-group list-group-flush">
+                            {% for doc in claim.documents %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-file-pdf text-danger me-2 fs-5"></i>
+                                        <strong class="text-dark">{{ doc.file_name }}</strong>
+                                        <small class="d-block text-muted" style="font-size: 11px;">Uploaded on {{ doc.uploaded_at }}</small>
+                                    </div>
+                                    <a href="/static/{{ doc.file_path }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt me-1"></i> Inspect File</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Decision Column -->
+            <div class="col-lg-5">
+                <div class="card card-table p-4 shadow-sm border-primary">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-gavel me-2"></i> Record Officer Decision</h5>
+
+                    <form id="claimReviewForm">
+                        <input type="hidden" id="reviewClaimId" value="{{ claim.id }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Select Decision *</label>
+                            <select id="reviewDecision" class="form-select form-select-lg" required>
+                                <option value="">-- Select Decision --</option>
+                                <option value="APPROVED" class="text-success font-weight-bold">APPROVE CLAIM</option>
+                                <option value="REJECTED" class="text-danger font-weight-bold">REJECT CLAIM</option>
+                                <option value="REQUEST_MORE_DOCUMENTS" class="text-warning font-weight-bold">REQUEST MORE DOCUMENTS</option>
+                                <option value="UNDER_REVIEW" class="text-info font-weight-bold">MARK UNDER REVIEW</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-weight-bold">Officer Remarks / Rejection Reason *</label>
+                            <textarea id="reviewRemarks" rows="5" class="form-control" placeholder="Provide detailed assessment remarks. (Required if rejecting claim)..."></textarea>
+                            <small class="text-muted">Remarks will be logged into claim history and sent to customer notification.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Submit Decision & Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

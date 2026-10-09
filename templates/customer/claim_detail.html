@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Claim Details {{ claim.claim_number if claim else '' }} - AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% if not claim %}
+        <div class="alert alert-danger py-4 text-center">
+            <h5 class="fw-bold">Claim Not Found</h5>
+            <p>The requested claim could not be loaded or you do not have permission to view it.</p>
+            <a href="{{ url_for('customer.claims_view') }}" class="btn btn-outline-danger">Back to Claims</a>
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="{{ url_for('customer.claims_view') }}" class="text-decoration-none text-muted small"><i class="fas fa-arrow-left me-1"></i> Back to My Claims</a>
+                <h2 class="fw-bold mb-0">Claim {{ claim.claim_number }}</h2>
+            </div>
+            <span class="badge-status badge-{{ claim.status.lower() }} fs-6 px-3 py-2">{{ claim.status.replace('_', ' ') }}</span>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Panel: Details & Timeline -->
+            <div class="col-lg-8">
+                <!-- Claim Info Card -->
+                <div class="card card-table p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-file-invoice me-2"></i> Claim Overview</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Policy Number:</span>
+                            <strong class="fs-6">{{ claim.policy_number }} ({{ claim.policy_type_name }})</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Claim Amount:</span>
+                            <strong class="fs-5 text-success">₹{{ "{:,.2f}".format(claim.claim_amount) }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Claim Reason:</span>
+                            <strong>{{ claim.reason }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Incident / Treatment Date:</span>
+                            <strong>{{ claim.claim_date }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small d-block">Assigned Claims Officer:</span>
+                            <strong>{{ claim.officer_name if claim.officer_name else 'Pending Assignment' }}</strong>
+                        </div>
+                        <div class="col-md-12">
+                            <span class="text-muted small d-block">Detailed Description:</span>
+                            <p class="p-3 bg-light rounded text-dark mb-0">{{ claim.description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Status Timeline -->
+                <div class="card card-table p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-stream me-2"></i> Visual Claim Progress</h5>
+                    
+                    <div class="timeline">
+                        <!-- Step 1: Claim Submitted -->
+                        <div class="timeline-item completed">
+                            <div class="timeline-dot"><i class="fas fa-check"></i></div>
+                            <h6 class="fw-bold mb-1">Claim Submitted</h6>
+                            <small class="text-muted">Claim registered in system on {{ claim.created_at }}</small>
+                        </div>
+
+                        <!-- Step 2: Under Review / Document Check -->
+                        <div class="timeline-item {{ 'completed' if claim.status in ('UNDER_REVIEW', 'APPROVED', 'REJECTED', 'SETTLED', 'CLOSED') else 'active' if claim.status in ('SUBMITTED', 'DOCUMENT_REQUIRED') else '' }}">
+                            <div class="timeline-dot"><i class="fas fa-search"></i></div>
+                            <h6 class="fw-bold mb-1">Document & Officer Assessment</h6>
+                            <small class="text-muted">
+                                {% if claim.status == 'DOCUMENT_REQUIRED' %}
+                                    <span class="text-warning fw-bold">Action Required: Additional proof documents requested by officer.</span>
+                                {% else %}
+                                    Under evaluation by Claims Assessment Department.
+                                {% endif %}
+                            </small>
+                        </div>
+
+                        <!-- Step 3: Decision -->
+                        <div class="timeline-item {{ 'completed' if claim.status in ('APPROVED', 'SETTLED', 'CLOSED') else 'active' if claim.status == 'REJECTED' else '' }}">
+                            <div class="timeline-dot">
+                                {% if claim.status == 'APPROVED' or claim.status == 'SETTLED' %}
+                                    <i class="fas fa-check"></i>
+                                {% elif claim.status == 'REJECTED' %}
+                                    <i class="fas fa-times"></i>
+                                {% else %}
+                                    <i class="fas fa-gavel"></i>
+                                {% endif %}
+                            </div>
+                            <h6 class="fw-bold mb-1">Final Approval / Decision</h6>
+                            <small class="text-muted">
+                                {% if claim.status == 'APPROVED' %}
+                                    <span class="text-success fw-bold">Approved! Proceeding to financial disbursement.</span>
+                                {% elif claim.status == 'REJECTED' %}
+                                    <span class="text-danger fw-bold">Claim rejected based on policy terms assessment.</span>
+                                {% else %}
+                                    Awaiting officer decision.
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Remarks & History -->
+                <div class="card card-table p-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-history me-2"></i> Officer Remarks & Review Logs</h5>
+                    {% if not claim.reviews %}
+                        <p class="text-muted small mb-0">No review logs available yet.</p>
+                    {% else %}
+                        <div class="list-group list-group-flush">
+                            {% for rev in claim.reviews %}
+                                <div class="list-group-item px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark">{{ rev.officer_name }} (Officer)</strong>
+                                        <span class="badge bg-secondary">{{ rev.decision }}</span>
+                                    </div>
+                                    <p class="mb-1 text-muted small">{{ rev.remarks if rev.remarks else 'No remarks entered.' }}</p>
+                                    <small class="text-muted" style="font-size: 11px;">Recorded on {{ rev.review_date }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Panel: Claim Documents -->
+            <div class="col-lg-4">
+                <div class="card card-table p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-primary border-bottom pb-2"><i class="fas fa-paperclip me-2"></i> Claim Documents</h5>
+                    
+                    {% if not claim.documents %}
+                        <p class="text-muted small">No documents attached to this claim.</p>
+                    {% else %}
+                        <ul class="list-group list-group-flush mb-4">
+                            {% for doc in claim.documents %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                                        <strong class="small text-dark">{{ doc.file_name }}</strong>
+                                        <small class="d-block text-muted" style="font-size: 11px;">Uploaded by {{ doc.uploader_name }}</small>
+                                    </div>
+                                    <a href="/static/{{ doc.file_path }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-download"></i></a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    <!-- Upload Additional Document Form -->
+                    <div class="p-3 bg-light rounded border">
+                        <h6 class="fw-bold mb-2 small"><i class="fas fa-cloud-upload-alt me-1"></i> Upload Additional Proof</h6>
+                        <form id="addDocForm" enctype="multipart/form-data">
+                            <input type="hidden" name="claim_id" value="{{ claim.id }}">
+                            <div class="mb-3">
+                                <input type="file" name="document" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" required>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-primary w-100 fw-bold">Upload File</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const docForm = document.getElementById('addDocForm');
+    if (docForm) {
+        docForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const claimId = '{{ claim.id if claim else "" }}';
+            const formData = new FormData(docForm);
+
+            const res = await fetchAPI(`/api/claims/${claimId}/documents`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (res.success) {
+                showToast(res.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(res.message, 'danger');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

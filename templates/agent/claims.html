@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Claims - Agent Workstation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Customer Claims Overview</h2>
+        <p class="text-muted">Track filed claims for your assigned customer portfolio</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom">
+            <h6 class="mb-0 fw-bold">Claims Listing</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Customer</th>
+                        <th>Policy</th>
+                        <th>Claim Amount</th>
+                        <th>Claim Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="agentClaimsTableBody">
+                    <tr><td colspan="6" class="text-center py-4 text-muted">Loading claims...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadClaims();
+});
+
+async function loadClaims() {
+    const tbody = document.getElementById('agentClaimsTableBody');
+    const res = await fetchAPI('/api/claims');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(c => `
+            <tr>
+                <td class="font-weight-bold">${c.claim_number}</td>
+                <td>${c.customer_name}</td>
+                <td>${c.policy_number}</td>
+                <td class="font-weight-bold">₹${parseFloat(c.claim_amount).toLocaleString('en-IN')}</td>
+                <td>${c.claim_date}</td>
+                <td><span class="badge-status badge-${c.status.toLowerCase()}">${c.status.replace('_', ' ')}</span></td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

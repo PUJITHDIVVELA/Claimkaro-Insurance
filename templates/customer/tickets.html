@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Support Tickets - AegisCare Insurance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Customer Support Tickets</h2>
+            <p class="text-muted mb-0">Raise inquiries or technical tickets regarding policies, claims, or payments</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+            <i class="fas fa-plus me-2"></i>Raise Support Ticket
+        </button>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold">Support Requests</h6>
+            <input type="text" id="ticketSearch" class="form-control form-control-sm w-25" placeholder="Search ticket # or subject...">
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>Category</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketsTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading support tickets...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Raise Support Ticket Modal -->
+<div class="modal fade" id="createTicketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title text-white mb-0"><i class="fas fa-headset me-2"></i>Create New Support Ticket</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createTicketForm">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Category *</label>
+                        <select name="category" class="form-select" required>
+                            <option value="Policy">Policy</option>
+                            <option value="Claim">Claim</option>
+                            <option value="Payment">Payment</option>
+                            <option value="Documents">Documents</option>
+                            <option value="Account">Account</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Priority *</label>
+                        <select name="priority" class="form-select" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Subject *</label>
+                        <input type="text" name="subject" class="form-control" placeholder="Short description of your query" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Full Issue Description *</label>
+                        <textarea name="description" rows="4" class="form-control" placeholder="Provide complete details..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadTickets();
+
+    const form = document.getElementById('createTicketForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            category: form.category.value,
+            priority: form.priority.value,
+            subject: form.subject.value,
+            description: form.description.value
+        };
+
+        const res = await fetchAPI('/api/tickets', { method: 'POST', body: data });
+        if (res.success) {
+            showToast(res.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createTicketModal')).hide();
+            form.reset();
+            loadTickets();
+        } else {
+            showToast(res.message, 'danger');
+        }
+    });
+});
+
+async function loadTickets() {
+    const tbody = document.getElementById('ticketsTableBody');
+    const res = await fetchAPI('/api/tickets');
+    if (res.success && res.data) {
+        if (res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No support tickets found.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = res.data.map(t => `
+            <tr>
+                <td class="font-weight-bold"><a href="/customer/tickets/${t.id}">${t.ticket_number}</a></td>
+                <td><span class="badge bg-light text-dark border">${t.category}</span></td>
+                <td>${t.subject}</td>
+                <td><span class="badge ${t.priority === 'HIGH' || t.priority === 'URGENT' ? 'bg-danger' : 'bg-info'}">${t.priority}</span></td>
+                <td><span class="badge-status badge-${t.status.toLowerCase()}">${t.status.replace('_', ' ')}</span></td>
+                <td>${t.created_at}</td>
+                <td><a href="/customer/tickets/${t.id}" class="btn btn-sm btn-outline-primary"><i class="fas fa-comments me-1"></i> Chat</a></td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

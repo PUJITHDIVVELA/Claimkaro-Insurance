@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}All System Claims - Claims Officer{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">All System Claims Registry</h2>
+        <p class="text-muted">Master database of all submitted, approved, and rejected claims</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6 class="mb-0 fw-bold">Master Claims List</h6>
+            <div class="d-flex gap-2">
+                <input type="text" id="officerSearch" class="form-control form-control-sm" placeholder="Search claim # or customer..." style="width: 220px;">
+                <select id="officerStatus" class="form-select form-select-sm" style="width: 180px;">
+                    <option value="">All Statuses</option>
+                    <option value="SUBMITTED">SUBMITTED</option>
+                    <option value="UNDER_REVIEW">UNDER REVIEW</option>
+                    <option value="DOCUMENT_REQUIRED">DOCUMENT REQUIRED</option>
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="REJECTED">REJECTED</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Customer</th>
+                        <th>Policy</th>
+                        <th>Claim Amount</th>
+                        <th>Claim Date</th>
+                        <th>Status</th>
+                        <th>Assigned Officer</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="allClaimsTableBody">
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Loading claims...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadAllClaims();
+    document.getElementById('officerSearch').addEventListener('input', loadAllClaims);
+    document.getElementById('officerStatus').addEventListener('change', loadAllClaims);
+});
+
+async function loadAllClaims() {
+    const tbody = document.getElementById('allClaimsTableBody');
+    const search = document.getElementById('officerSearch').value;
+    const status = document.getElementById('officerStatus').value;
+
+    const res = await fetchAPI(`/api/claims?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`);
+    if (res.success && res.data) {
+        if (res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No claims found.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = res.data.map(c => `
+            <tr>
+                <td class="font-weight-bold"><a href="/officer/claims/${c.id}/review">${c.claim_number}</a></td>
+                <td>${c.customer_name}</td>
+                <td>${c.policy_number}</td>
+                <td class="font-weight-bold">₹${parseFloat(c.claim_amount).toLocaleString('en-IN')}</td>
+                <td>${c.claim_date}</td>
+                <td><span class="badge-status badge-${c.status.toLowerCase()}">${c.status.replace('_', ' ')}</span></td>
+                <td>${c.officer_name ? c.officer_name : 'Unassigned'}</td>
+                <td>
+                    <a href="/officer/claims/${c.id}/review" class="btn btn-sm btn-outline-primary">Inspect</a>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

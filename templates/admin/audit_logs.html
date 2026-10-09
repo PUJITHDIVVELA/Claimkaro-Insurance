@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}System Audit Logs - Admin AegisCare{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Security & System Audit Logs</h2>
+        <p class="text-muted">Compliance audit records of user authentications, policy purchases, claim reviews, and admin actions</p>
+    </div>
+
+    <div class="card card-table">
+        <div class="p-3 border-bottom">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i> Activity Trail</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Module</th>
+                        <th>Description</th>
+                        <th>IP Address</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody id="auditLogsTableBody">
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading audit logs...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    loadAuditLogs();
+});
+
+async function loadAuditLogs() {
+    const tbody = document.getElementById('auditLogsTableBody');
+    const res = await fetchAPI('/admin/api/audit-logs');
+    if (res.success && res.data) {
+        tbody.innerHTML = res.data.map(log => `
+            <tr>
+                <td>#${log.id}</td>
+                <td><strong>${log.user_name ? log.user_name : 'System'}</strong> ${log.user_role ? '(' + log.user_role + ')' : ''}</td>
+                <td><span class="badge bg-dark">${log.action}</span></td>
+                <td><span class="badge bg-secondary">${log.module}</span></td>
+                <td class="small text-muted">${log.description}</td>
+                <td><code>${log.ip_address}</code></td>
+                <td>${log.created_at}</td>
+            </tr>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

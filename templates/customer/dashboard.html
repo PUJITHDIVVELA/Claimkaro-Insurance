@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Dashboard - AegisCare Insurance{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="customerDashboardStats">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Welcome back, {{ session.name }} 👋</h2>
+            <p class="text-muted mb-0">Overview of your active insurance policies, claims status, and support activity</p>
+        </div>
+        <a href="{{ url_for('customer.submit_claim_view') }}" class="btn btn-primary shadow-sm"><i class="fas fa-plus me-2"></i>Submit New Claim</a>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Active Policies</span>
+                    <div class="stat-icon bg-primary text-white"><i class="fas fa-shield-alt"></i></div>
+                </div>
+                <div class="stat-value" id="statActivePolicies">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Total Claims</span>
+                    <div class="stat-icon bg-info text-white"><i class="fas fa-file-invoice-dollar"></i></div>
+                </div>
+                <div class="stat-value" id="statTotalClaims">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Pending Claims</span>
+                    <div class="stat-icon bg-warning text-white"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="stat-value text-warning" id="statPendingClaims">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Approved Claims</span>
+                    <div class="stat-icon bg-success text-white"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-value text-success" id="statApprovedClaims">0</div>
+            </div>
+        </div>
+        <div class="col-md-2-4 col-sm-6">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="stat-label">Open Support Tickets</span>
+                    <div class="stat-icon bg-secondary text-white"><i class="fas fa-ticket-alt"></i></div>
+                </div>
+                <div class="stat-value" id="statOpenTickets">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Banner -->
+    <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon bg-dark text-info"><i class="fas fa-bolt fs-4"></i></div>
+                <div>
+                    <h6 class="mb-0 font-weight-bold">Need Fast Assistance?</h6>
+                    <small class="text-muted">Use our 24/7 AI Insurance Assistant or raise a ticket directly with support.</small>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('customer.policies_view') }}" class="btn btn-outline-primary btn-sm">Explore Policies</a>
+                <a href="{{ url_for('customer.tickets_view') }}" class="btn btn-outline-dark btn-sm">Raise Ticket</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Claims Table -->
+    <div class="card card-table">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i> Recent Claims History</h6>
+            <a href="{{ url_for('customer.claims_view') }}" class="btn btn-sm btn-link p-0 text-decoration-none">View All Claims</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Claim Number</th>
+                        <th>Policy Number</th>
+                        <th>Reason</th>
+                        <th>Claim Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recentClaimsTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">Loading your claims...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
